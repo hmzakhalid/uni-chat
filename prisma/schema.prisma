@@ -6,12 +6,16 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
-    url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Message {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  text         String
+  hasImage     Boolean  @default(false)
+  imageUrl     String?
+  imageKey     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }

@@ -18,5 +18,9 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+
+  images: {
+    domains: ["uni-chat-app.s3.ap-south-1.amazonaws.com"],
+  },
 };
 export default config;
