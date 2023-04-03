@@ -48,10 +48,10 @@ const Home: NextPage = () => {
         fileType: currentFile.type,
       });
 
-      // const image = await fetch(url, {
-      //   method: "PUT",
-      //   body: currentFile,
-      // });
+      const image = await fetch(url, {
+        method: "PUT",
+        body: currentFile,
+      });
 
       if (image.ok) {
         const data = await addMutation.mutateAsync({
