@@ -6,52 +6,79 @@ import { LoadingPage } from "~/components/Loading";
 import { api } from "~/utils/api";
 import {
   Container,
-  TextInput,
   Button,
-  Modal,
   Card,
   Textarea,
   FileButton,
   Group,
   Text,
-  Paper,
   Stack,
+  Loader,
+  Center,
 } from "@mantine/core";
-import { ChatBubbleIcon, ImageIcon, TrashIcon } from "@radix-ui/react-icons";
+import {
+  PaperPlaneIcon,
+  ResetIcon,
+  TrashIcon,
+  UploadIcon,
+} from "@radix-ui/react-icons";
 
 const MessageCard: React.FC<{ message: Message }> = ({ message }) => {
+  const [loading, setLoading] = useState(false);
+  const deleteMutation = api.msg.delete.useMutation();
+
+  const handleDelete = async () => {
+    setLoading(true);
+    await deleteMutation.mutateAsync(message.id);
+    setLoading(false);
+  };
+
   return (
     <>
       <Card shadow="sm" padding="md" radius="md" my="md" withBorder>
-        <Stack mt="md" mb="xs">
-          <Text size="md" ml="sm">
-            {message.text}
-          </Text>
-          {message.hasImage && message.imageUrl && (
-            <Image
-              src={message.imageUrl}
-              width="0"
-              height="0"
-              sizes="100vw"
-              className="h-auto w-2/4 rounded-md"
-              alt="image"
-            />
-          )}
-        </Stack>
-        <Group position="apart" mt="md" mb="xs">
-          <Text ml="sm" size="xs" color="dimmed">
-            {new Date(message.createdAt).toLocaleString()}
-          </Text>
-          <TrashIcon color="red" />
-        </Group>
+        {loading ? (
+          <Center m="lg">
+            <Loader variant="dots" color="#fff" />
+          </Center>
+        ) : (
+          <>
+            <Stack mt="md" mb="xs">
+              <Text size="md" ml="sm">
+                {message.text}
+              </Text>
+              {message.hasImage && message.imageUrl && (
+                <Image
+                  src={message.imageUrl}
+                  width="0"
+                  height="0"
+                  sizes="100vw"
+                  className="h-auto w-2/4 rounded-md"
+                  alt="image"
+                />
+              )}
+            </Stack>
+            <Group position="apart" mt="md" mb="xs">
+              <Text ml="sm" size="xs" color="dimmed">
+                {new Date(message.createdAt).toLocaleString()}
+              </Text>
+              <Button
+                className="bg-transparent text-red-600 hover:bg-red-600 hover:text-white"
+                size="md"
+                onClick={handleDelete}
+              >
+                <TrashIcon />
+              </Button>
+            </Group>
+          </>
+        )}
       </Card>
     </>
   );
 };
 
 const Home: NextPage = () => {
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const resetRef = useRef<() => void>(null);
 
@@ -60,9 +87,9 @@ const Home: NextPage = () => {
     resetRef.current?.();
   };
 
-  const { data, isLoading, isError } = api.message.list.useQuery({});
+  const { data, isLoading, isError } = api.msg.list.useQuery({});
   const s3Mutation = api.s3.getPresignedUrl.useMutation();
-  const addMutation = api.message.add.useMutation();
+  const addMutation = api.msg.add.useMutation();
 
   const uploadImage = async () => {
     if (!file) return null;
@@ -84,6 +111,8 @@ const Home: NextPage = () => {
   const handleSubmit = async (event: ChangeEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!message) return;
+    setLoading(true);
+
     let imageKey = null;
     if (file) {
       imageKey = await uploadImage();
@@ -96,7 +125,7 @@ const Home: NextPage = () => {
 
     setMessage("");
     setFile(null);
-    showModal && setShowModal(false);
+    setLoading(false);
   };
 
   if (isLoading)
@@ -112,34 +141,72 @@ const Home: NextPage = () => {
     <Container size="sm" mt="sm">
       <form onSubmit={handleSubmit}>
         <Group position="right" mt="md" mb="xs">
-          <Textarea
-            className="w-full"
-            size="md"
-            placeholder="Enter a message"
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-          />
-          <Button
-            variant="outline"
-            color="blue"
-            onClick={() => setShowModal(true)}
-          >
-            <ImageIcon className="mr-2" />
-            Upload Image
-          </Button>
-          <Button
-            variant="outline"
-            color="blue"
-            disabled={!message && !file}
-            type="submit"
-          >
-            <ChatBubbleIcon className="mr-2" />
-            Send Message
-          </Button>
+          <Card className="w-full" radius="sm">
+            <Stack>
+              <Textarea
+                className="w-full"
+                size="md"
+                placeholder="Enter a message"
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+              />
+              {file && (
+                <Image
+                  src={URL.createObjectURL(file)}
+                  width="0"
+                  height="0"
+                  sizes="100vw"
+                  className="h-auto w-1/4 rounded-md"
+                  alt="image"
+                />
+              )}
+            </Stack>
+            <Group position="right" mt="md" mb="xs">
+              {loading ? (
+                <Loader variant="dots" color="#fff" />
+              ) : (
+                <>
+                  {file && (
+                    <Button
+                      className="bg-transparent"
+                      size="xs"
+                      color="red"
+                      onClick={clearFile}
+                    >
+                      <ResetIcon />
+                    </Button>
+                  )}
+                  <FileButton
+                    resetRef={resetRef}
+                    onChange={setFile}
+                    accept="image/png,image/jpeg"
+                  >
+                    {(props) => (
+                      <Button
+                        className="bg-transparent hover:bg-sky-600"
+                        size="xs"
+                        {...props}
+                      >
+                        <UploadIcon />
+                      </Button>
+                    )}
+                  </FileButton>
+                  <Button
+                    className="bg-transparent hover:bg-sky-600"
+                    size="xs"
+                    type="submit"
+                  >
+                    <PaperPlaneIcon />
+                  </Button>
+                </>
+              )}
+            </Group>
+          </Card>
         </Group>
       </form>
+
       <Group position="apart" mt="md" mb="xs">
-        <div className="w-full mb-4">
+        <div className="mb-4 w-full">
           {isLoading ? (
             <LoadingPage />
           ) : isError ? (
@@ -151,66 +218,6 @@ const Home: NextPage = () => {
           )}
         </div>
       </Group>
-
-      <Modal
-        opened={showModal}
-        onClose={() => setShowModal(false)}
-        title="Upload Image"
-        size="xl"
-        centered
-      >
-        <Paper mb="sm" style={{ textAlign: "center" }}>
-          {file ? (
-            <div>
-              <Image
-                src={URL.createObjectURL(file)}
-                alt="preview"
-                width="0"
-                height="0"
-                sizes="100vw"
-                className="my-4 h-auto w-full rounded"
-              />
-            </div>
-          ) : (
-            <Text my="xs">No image selected</Text>
-          )}
-          <Group position="center">
-            <FileButton
-              resetRef={resetRef}
-              onChange={setFile}
-              accept="image/png,image/jpeg"
-            >
-              {(props) => <Button {...props}>Select image</Button>}
-            </FileButton>
-            <Button disabled={!file} color="red" onClick={clearFile}>
-              Reset
-            </Button>
-          </Group>
-          <Group position="center">
-            <form onSubmit={handleSubmit} className="w-full">
-              <Group position="right" mt="md" mb="xs">
-                <TextInput
-                  size="sm"
-                  className="w-3/4"
-                  placeholder="Enter a message"
-                  maxLength={255}
-                  value={message}
-                  onChange={(event) => setMessage(event.target.value)}
-                  icon={<ChatBubbleIcon />}
-                />
-                <Button
-                  variant="outline"
-                  color="blue"
-                  disabled={!file && !message}
-                  type="submit"
-                >
-                  Send Message
-                </Button>
-              </Group>
-            </form>
-          </Group>
-        </Paper>
-      </Modal>
     </Container>
   );
 };

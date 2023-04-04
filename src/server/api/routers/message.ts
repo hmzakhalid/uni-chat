@@ -35,7 +35,7 @@ export const messageRouter = createTRPCRouter({
       return message;
     }),
 
-  delete: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
+  delete: publicProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
     const message = await ctx.prisma.message.findUnique({
       where: { id: input },
     });

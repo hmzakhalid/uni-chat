@@ -7,7 +7,7 @@ import { s3Router } from "~/server/api/routers/s3";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  message: messageRouter,
+  msg: messageRouter,
   s3: s3Router,
 });
 
