@@ -1,28 +1,29 @@
-# Create T3 App
+![CI Build](https://github.com/hmzakhalid/uni-chat/actions/workflows/ci.yml/badge.svg)
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+# Uni-Chat
 
-## What's next? How do I make an app with this?
+A Simplistic Global TypeSafe Chat App.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Features
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+[x] Anyone can enter a message into the single (global) room
+[x] You can optionally upload an image; if you do it is attached to the message and always displayed
+[x] Anyone can delete any message by clicking the delete icon
+[x] Messages are displayed with their timestamp
+[x] Messages can be sorted by either their creation time or the message, ascending or descending
+[x] Optimistic Updates on add and delete
+[x] Infinite Scroll with useInfiniteQuery
+[x] Cursor based pagination with prisma
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Tech Stack
 
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+[x] Next.js
+[x] tRPC
+[x] TypeScript
+[x] React
+[x] Mantine
+[x] TailwindCSS
+[x] Prisma
+[x] MongoDB
+[x] AWS S3 Bucket
+[x] pnpm, prettier, eslint
