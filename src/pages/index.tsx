@@ -1,5 +1,5 @@
 import { type NextPage } from "next";
-import { type ChangeEvent, useRef, useState } from "react";
+import { type ChangeEvent, useRef, useState, useEffect } from "react";
 import type { Message } from "@prisma/client";
 import Image from "next/image";
 import { LoadingPage } from "~/components/Loading";
@@ -25,7 +25,12 @@ import {
 
 const MessageCard: React.FC<{ message: Message }> = ({ message }) => {
   const [loading, setLoading] = useState(false);
-  const deleteMutation = api.msg.delete.useMutation();
+  const utils = api.useContext();
+  const deleteMutation = api.msg.delete.useMutation({
+    onSuccess: async () => {
+      await utils.msg.list.invalidate();
+    },
+  });
 
   const handleDelete = async () => {
     setLoading(true);
@@ -76,18 +81,67 @@ const MessageCard: React.FC<{ message: Message }> = ({ message }) => {
   );
 };
 
+function useScrollPosition() {
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  const handleScroll = () => {
+    const height =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+    const winScroll =
+      document.body.scrollTop || document.documentElement.scrollTop;
+
+    const scrolled = (winScroll / height) * 100;
+    setScrollPosition(scrolled);
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  return scrollPosition;
+}
+
 const Home: NextPage = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const resetRef = useRef<() => void>(null);
+  const scrollPosition = useScrollPosition();
 
   // tRPC stuff
   const utils = api.useContext();
-  const { data, isLoading, isError } = api.msg.list.useQuery({});
+  const { data, hasNextPage, fetchNextPage, isFetching, isError, isLoading } =
+    api.msg.list.useInfiniteQuery(
+      {
+        take: 5,
+      },
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+      }
+    );
+
+  const messages = data?.pages.flatMap((page) => page.messages) ?? [];
+
+  useEffect(() => {
+    const handleScroll = async () => {
+      if (scrollPosition > 90 && hasNextPage && !isFetching) {
+        await fetchNextPage();
+      }
+    };
+    handleScroll().catch(console.error);
+  }, [scrollPosition, hasNextPage, isFetching, fetchNextPage]);
+
   const s3Mutation = api.s3.getPresignedUrl.useMutation();
-  const addMutation = api.msg.add.useMutation();
-  
+  const addMutation = api.msg.add.useMutation({
+    onSuccess: async () => {
+      await utils.msg.list.invalidate();
+    },
+  });
 
   const clearFile = () => {
     setFile(null);
@@ -151,6 +205,7 @@ const Home: NextPage = () => {
                 size="md"
                 placeholder="Enter a message"
                 value={message}
+                disabled={loading}
                 onChange={(event) => setMessage(event.target.value)}
               />
               {file && (
@@ -215,11 +270,23 @@ const Home: NextPage = () => {
           ) : isError ? (
             <Text>Error fetching messages</Text>
           ) : (
-            data.messages.map((msg) => (
-              <MessageCard key={msg.id} message={msg} />
-            ))
+            messages.map((msg) => <MessageCard key={msg.id} message={msg} />)
           )}
         </div>
+
+        {!hasNextPage && (
+          <div className="mb-4 w-full text-center">
+            <Text color="dimmed" size="sm">
+              That&apos;s all folks!
+            </Text>
+          </div>
+        )}
+
+        {isFetching && (
+          <div className="w-full text-center">
+            <Loader variant="dots" color="#fff" />
+          </div>
+        )}
       </Group>
     </Container>
   );

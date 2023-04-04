@@ -66,12 +66,8 @@ export const messageRouter = createTRPCRouter({
   list: publicProcedure
     .input(
       z.object({
-        take: z.number().optional().default(10),
-        cursor: z
-          .object({
-            id: z.string(),
-          })
-          .optional(),
+        take: z.number().optional().default(5),
+        cursor: z.string().optional(),
         sortBy: z.enum(["text", "createdAt"]).optional().default("createdAt"),
         sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
       })
@@ -82,17 +78,18 @@ export const messageRouter = createTRPCRouter({
       const orderBy = { [sortBy]: sortOrder };
 
       const messages = await ctx.prisma.message.findMany({
-        take,
-        cursor: cursor
-          ? {
-              id: cursor.id,
-            }
-          : undefined,
+        take: take + 1,
+        cursor: cursor ? { id: cursor }: undefined,
         orderBy,
       });
+      // const nextCursor = messages.length > 0 ? messages[messages.length - 1] : null;
+      // messages.pop();
 
-      const nextCursor =
-        messages.length > 0 ? messages[messages.length - 1] : null;
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (messages.length > take) {
+        const nextItem = messages.pop();
+        nextCursor = nextItem?.id;
+      }
 
       return { messages, nextCursor };
     }),
