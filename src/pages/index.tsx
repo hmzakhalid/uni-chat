@@ -82,14 +82,17 @@ const Home: NextPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const resetRef = useRef<() => void>(null);
 
+  // tRPC stuff
+  const utils = api.useContext();
+  const { data, isLoading, isError } = api.msg.list.useQuery({});
+  const s3Mutation = api.s3.getPresignedUrl.useMutation();
+  const addMutation = api.msg.add.useMutation();
+  
+
   const clearFile = () => {
     setFile(null);
     resetRef.current?.();
   };
-
-  const { data, isLoading, isError } = api.msg.list.useQuery({});
-  const s3Mutation = api.s3.getPresignedUrl.useMutation();
-  const addMutation = api.msg.add.useMutation();
 
   const uploadImage = async () => {
     if (!file) return null;

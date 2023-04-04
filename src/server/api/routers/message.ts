@@ -60,7 +60,7 @@ export const messageRouter = createTRPCRouter({
           console.log(err);
         });
     }
-    return ctx.prisma.message.delete({ where: { id: input } });
+    return await ctx.prisma.message.delete({ where: { id: input } });
   }),
 
   list: publicProcedure
