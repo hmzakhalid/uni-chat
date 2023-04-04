@@ -22,13 +22,18 @@ export const messageRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       if (process.env.S3_IMAGE_URL === undefined)
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "S3_IMAGE_URL is undefined" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "S3_IMAGE_URL is undefined",
+        });
 
       const message = await ctx.prisma.message.create({
         data: {
           text: input.text,
           hasImage: input.hasImage,
-          imageUrl: input.imageKey ? `${process.env.S3_IMAGE_URL}/${input.imageKey}` : null,
+          imageUrl: input.imageKey
+            ? `${process.env.S3_IMAGE_URL}/${input.imageKey}`
+            : null,
           imageKey: input.imageKey,
         },
       });
@@ -44,7 +49,10 @@ export const messageRouter = createTRPCRouter({
     }
     if (message.hasImage && message.imageKey) {
       if (process.env.S3_BUCKET_NAME === undefined)
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "S3_BUCKET_NAME is undefined" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "S3_BUCKET_NAME is undefined",
+        });
 
       const params = {
         Bucket: process.env.S3_BUCKET_NAME,
@@ -79,7 +87,7 @@ export const messageRouter = createTRPCRouter({
 
       const messages = await ctx.prisma.message.findMany({
         take: take + 1,
-        cursor: cursor ? { id: cursor }: undefined,
+        cursor: cursor ? { id: cursor } : undefined,
         orderBy,
       });
 

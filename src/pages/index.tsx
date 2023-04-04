@@ -1,19 +1,11 @@
 import { type NextPage } from "next";
-import {  useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { LoadingPage } from "~/components/Loading";
 import { MessageCard } from "~/components/MessageCard";
 import { InputCard } from "~/components/InputCard";
 import { api } from "~/utils/api";
 import useScrollPosition from "~/hooks/useScrollPosition";
-import {
-  Container,
-  Group,
-  Select,
-  Text,
-  Loader,
-  Center,
-} from "@mantine/core";
-
+import { Container, Group, Select, Text, Loader, Center } from "@mantine/core";
 
 const Home: NextPage = () => {
   const [sortBy, setSortBy] = useState<"createdAt" | "text">("createdAt");
@@ -55,7 +47,7 @@ const Home: NextPage = () => {
           }}
           data={[
             { value: "text", label: "Message" },
-            { value: "createdAt", label: "Created At" }
+            { value: "createdAt", label: "Created At" },
           ]}
         />
         <Select
@@ -66,7 +58,7 @@ const Home: NextPage = () => {
           }}
           data={[
             { value: "asc", label: "Ascending" },
-            { value: "desc", label: "Descending" }
+            { value: "desc", label: "Descending" },
           ]}
         />
       </Group>

@@ -20,7 +20,10 @@ const config = {
   },
 
   images: {
-    domains: ["uni-chat-app.s3.ap-south-1.amazonaws.com", "images.unsplash.com"],
+    domains: [
+      "uni-chat-app.s3.ap-south-1.amazonaws.com",
+      "images.unsplash.com",
+    ],
   },
 };
 export default config;
