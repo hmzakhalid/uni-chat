@@ -82,8 +82,6 @@ export const messageRouter = createTRPCRouter({
         cursor: cursor ? { id: cursor }: undefined,
         orderBy,
       });
-      // const nextCursor = messages.length > 0 ? messages[messages.length - 1] : null;
-      // messages.pop();
 
       let nextCursor: typeof cursor | undefined = undefined;
       if (messages.length > take) {
