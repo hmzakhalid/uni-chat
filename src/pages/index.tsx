@@ -139,11 +139,11 @@ const Home: NextPage = () => {
         </Group>
       </form>
       <Group position="apart" mt="md" mb="xs">
-        <div style={{ marginBottom: "1rem" }}>
+        <div className="w-full mb-4">
           {isLoading ? (
-            <div>Loading...</div>
+            <LoadingPage />
           ) : isError ? (
-            <div>Error fetching messages</div>
+            <Text>Error fetching messages</Text>
           ) : (
             data.messages.map((msg) => (
               <MessageCard key={msg.id} message={msg} />
