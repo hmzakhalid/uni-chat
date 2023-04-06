@@ -18,20 +18,15 @@ export const MessageCard: React.FC<{ message: Message }> = ({ message }) => {
   const utils = api.useContext();
   const deleteMutation = api.msg.delete.useMutation({
     onMutate: async (id) => {
-      await utils.msg.list.cancel();
-      utils.msg.list.setData(
-        {
-          take: 5,
-        },
-        (old) => {
-          if (!old) return;
-          const newMessages = old.messages.filter((m) => m.id !== id);
-          return {
-            messages: newMessages,
-            nextCursor: old.nextCursor,
-          };
-        }
-      );
+      await utils.msg.list.cancel({});
+      utils.msg.list.setData({}, (old) => {
+        if (!old) return;
+        const newMessages = old.messages.filter((m) => m.id !== id);
+        return {
+          messages: newMessages,
+          nextCursor: old.nextCursor,
+        };
+      });
     },
     onSuccess: async () => {
       await utils.msg.list.invalidate();

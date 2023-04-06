@@ -22,8 +22,8 @@ export const InputCard: React.FC = () => {
   const s3Mutation = api.s3.getPresignedUrl.useMutation();
   const addMutation = api.msg.add.useMutation({
     onMutate: async (newMessage) => {
-      await utils.msg.list.cancel();
-      const previousMessages = utils.msg.list.getData();
+      await utils.msg.list.cancel({});
+      const previousMessages = utils.msg.list.getData({});
       const tempMessage: Message = {
         ...newMessage,
         id: Math.random().toString(),
@@ -32,31 +32,21 @@ export const InputCard: React.FC = () => {
         updatedAt: new Date(),
         imageKey: null, // change undefined to null because ts complained
       };
-      utils.msg.list.setData(
-        {
-          take: 5,
-        },
-        (old) => {
-          if (!old) return;
-          const newMessages = [...old.messages, tempMessage];
-          return {
-            messages: newMessages,
-            nextCursor: old.nextCursor,
-          };
-        }
-      );
+      utils.msg.list.setData({}, (old) => {
+        if (!old) return;
+        const newMessages = [...old.messages, tempMessage];
+        return {
+          messages: newMessages,
+          nextCursor: old.nextCursor,
+        };
+      });
 
       return { previousMessages };
     },
 
     onError: (err, newMessage, context) => {
       if (context?.previousMessages) {
-        utils.msg.list.setData(
-          {
-            take: 5,
-          },
-          context.previousMessages
-        );
+        utils.msg.list.setData({}, context.previousMessages);
       }
     },
 
