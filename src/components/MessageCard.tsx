@@ -14,9 +14,8 @@ import {
 import { TrashIcon } from "@radix-ui/react-icons";
 
 export const MessageCard: React.FC<{ message: Message }> = ({ message }) => {
-  const [loading, setLoading] = useState(false);
   const utils = api.useContext();
-  const deleteMutation = api.msg.delete.useMutation({
+  const { mutateAsync: deleteMutation, isLoading }= api.msg.delete.useMutation({
     onMutate: async (id) => {
       await utils.msg.list.cancel({});
       utils.msg.list.setData({}, (old) => {
@@ -34,15 +33,13 @@ export const MessageCard: React.FC<{ message: Message }> = ({ message }) => {
   });
 
   const handleDelete = async () => {
-    setLoading(true);
-    await deleteMutation.mutateAsync(message.id);
-    setLoading(false);
+    await deleteMutation(message.id);
   };
 
   return (
     <>
       <Card shadow="sm" padding="md" radius="md" my="md" withBorder>
-        {loading ? (
+        {isLoading ? (
           <Center m="lg">
             <Loader variant="dots" color="#fff" />
           </Center>

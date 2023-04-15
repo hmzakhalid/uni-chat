@@ -7,6 +7,11 @@ import { z } from "zod";
 const server = z.object({
   DATABASE_URL: z.string().url(),
   NODE_ENV: z.enum(["development", "test", "production"]),
+  S3_ACCESS_KEY: z.string().min(1),
+  S3_SECRET_KEY: z.string().min(1),
+  S3_BUCKET_NAME: z.string().min(1),
+  S3_REGION: z.string().min(1),
+  S3_IMAGE_URL: z.string().min(1),
 });
 
 /**
@@ -18,15 +23,33 @@ const client = z.object({
 });
 
 /**
+ * @param {string} key
+ * @returns {string}
+ * @throws {Error}
+ */
+function requireEnv(key) {
+  const value = process.env[key];
+  if (typeof value === "undefined") {
+    throw new Error(`Environment variable '${key}' is required but not set.`);
+  }
+  return value;
+}
+
+/**
  * You can't destruct `process.env` as a regular object in the Next.js edge runtimes (e.g.
  * middlewares) or client-side so we need to destruct manually.
  *
- * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
+ * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string>}
  */
 const processEnv = {
-  DATABASE_URL: process.env.DATABASE_URL,
   NODE_ENV: process.env.NODE_ENV,
-  // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  DATABASE_URL: requireEnv("DATABASE_URL"),
+  S3_ACCESS_KEY: requireEnv("S3_ACCESS_KEY"),
+  S3_SECRET_KEY: requireEnv("S3_SECRET_KEY"),
+  S3_BUCKET_NAME: requireEnv("S3_BUCKET_NAME"),
+  S3_REGION: requireEnv("S3_REGION"),
+  S3_IMAGE_URL: requireEnv("S3_IMAGE_URL"),
+  // NEXT_PUBLIC_CLIENTVAR: requireEnv('NEXT_PUBLIC_CLIENTVAR'),
 };
 
 // Don't touch the part below

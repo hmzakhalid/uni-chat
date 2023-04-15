@@ -1,7 +1,7 @@
+import { env } from "~/env.mjs";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import S3 from "aws-sdk/clients/s3";
-import { TRPCError } from "@trpc/server";
 
 const s3 = new S3({
   apiVersion: "2006-03-01",
@@ -21,18 +21,12 @@ export const messageRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (process.env.S3_IMAGE_URL === undefined)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "S3_IMAGE_URL is undefined",
-        });
-
       const message = await ctx.prisma.message.create({
         data: {
           text: input.text,
           hasImage: input.hasImage,
           imageUrl: input.imageKey
-            ? `${process.env.S3_IMAGE_URL}/${input.imageKey}`
+            ? `${env.S3_IMAGE_URL}/${input.imageKey}`
             : null,
           imageKey: input.imageKey,
         },
@@ -48,14 +42,8 @@ export const messageRouter = createTRPCRouter({
       throw new Error("Message not found");
     }
     if (message.hasImage && message.imageKey) {
-      if (process.env.S3_BUCKET_NAME === undefined)
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "S3_BUCKET_NAME is undefined",
-        });
-
       const params = {
-        Bucket: process.env.S3_BUCKET_NAME,
+        Bucket: env.S3_BUCKET_NAME,
         Key: message.imageKey,
       };
       await s3
@@ -91,11 +79,13 @@ export const messageRouter = createTRPCRouter({
         orderBy,
       });
 
-      let nextCursor: typeof cursor | undefined = undefined;
+      const nextCursor =
+        messages.length > take ? messages.pop()?.id : undefined;
+
       if (messages.length > take) {
-        const nextItem = messages.pop();
-        nextCursor = nextItem?.id;
+        messages.pop();
       }
+
 
       return { messages, nextCursor };
     }),

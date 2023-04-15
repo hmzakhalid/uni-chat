@@ -14,13 +14,13 @@ import {
 import { PaperPlaneIcon, ResetIcon, UploadIcon } from "@radix-ui/react-icons";
 
 export const InputCard: React.FC = () => {
-  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const resetRef = useRef<() => void>(null);
   const utils = api.useContext();
+
   const s3Mutation = api.s3.getPresignedUrl.useMutation();
-  const addMutation = api.msg.add.useMutation({
+  const { mutateAsync: addMutation, isLoading } = api.msg.add.useMutation({
     onMutate: async (newMessage) => {
       await utils.msg.list.cancel({});
       const previousMessages = utils.msg.list.getData({});
@@ -77,16 +77,20 @@ export const InputCard: React.FC = () => {
     return Key;
   };
 
+  const uploadImageIfPresent = async () => {
+    if (file) {
+      return await uploadImage();
+    }
+    return null;
+  };
+
   const handleSubmit = async (event: ChangeEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!message) return;
-    setLoading(true);
 
-    let imageKey = null;
-    if (file) {
-      imageKey = await uploadImage();
-    }
-    await addMutation.mutateAsync({
+    const imageKey = await uploadImageIfPresent();
+
+    await addMutation({
       text: message,
       hasImage: !!file,
       imageKey: imageKey ?? "",
@@ -94,9 +98,7 @@ export const InputCard: React.FC = () => {
 
     setMessage("");
     setFile(null);
-    setLoading(false);
   };
-
   return (
     <form onSubmit={handleSubmit}>
       <Group position="right" mt="md" mb="xs">
@@ -107,7 +109,7 @@ export const InputCard: React.FC = () => {
               size="md"
               placeholder="Enter a message"
               value={message}
-              disabled={loading}
+              disabled={isLoading}
               onChange={(event) => setMessage(event.target.value)}
             />
             {file && (
@@ -122,7 +124,7 @@ export const InputCard: React.FC = () => {
             )}
           </Stack>
           <Group position="right" mt="md" mb="xs">
-            {loading ? (
+            {isLoading ? (
               <Loader variant="dots" color="#fff" />
             ) : (
               <>
