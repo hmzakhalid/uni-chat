@@ -86,7 +86,6 @@ export const messageRouter = createTRPCRouter({
         messages.pop();
       }
 
-
       return { messages, nextCursor };
     }),
 });

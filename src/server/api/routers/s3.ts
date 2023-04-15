@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { env } from '~/env.mjs';
+import { env } from "~/env.mjs";
 import { randomUUID } from "crypto";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import S3 from "aws-sdk/clients/s3";
