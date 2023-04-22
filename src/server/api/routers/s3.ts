@@ -27,7 +27,9 @@ export const s3Router = createTRPCRouter({
         Key: Key,
         Expires: 60 * 2, // URL expires in 2 minutes
         ContentType: fileType,
+        ContentLength: 200 * 1024,
       };
+      
       const url = await s3.getSignedUrlPromise("putObject", params);
       return { url, Key };
     }),

@@ -65,6 +65,12 @@ export const InputCard: React.FC = () => {
     const formData = new FormData();
     formData.append("file", file);
 
+    // check file length is less than 200kb
+    if (file.size > 200000) {
+      alert("File size must be less than 200kb");
+      return null;
+    }
+
     const { url, Key } = await s3Mutation.mutateAsync({
       fileType: file.type,
     });
