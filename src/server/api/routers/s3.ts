@@ -29,7 +29,7 @@ export const s3Router = createTRPCRouter({
         ContentType: fileType,
         ContentLength: 200 * 1024,
       };
-      
+
       const url = await s3.getSignedUrlPromise("putObject", params);
       return { url, Key };
     }),
