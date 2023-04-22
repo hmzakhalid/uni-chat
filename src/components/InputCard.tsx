@@ -96,6 +96,7 @@ export const InputCard: React.FC = () => {
 
     const imageKey = await uploadImageIfPresent();
 
+    if (imageKey === null) return;
     await addMutation({
       text: message,
       hasImage: !!file,
